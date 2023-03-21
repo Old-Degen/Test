@@ -1,10 +1,13 @@
-from web3 import Web3
+from web3.auto import w3
+from web3.providers import HTTPProvider
+from web3.middleware import geth_poa_middleware
+from settings import NETWORKS
 
+def get_provider_uri(network):
+    return NETWORKS[network]['rpc']
 
-class RPC:
-    def __init__(self, provider_uri):
-        self.provider_uri = provider_uri
-        self.w3 = Web3(Web3.HTTPProvider(self.provider_uri))
-
-    def get_block_number(self):
-        return self.w3.eth.block_number
+def get_rpc(network):
+    provider_uri = get_provider_uri(network)
+    w3 = Web3(HTTPProvider(provider_uri))
+    w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    return w3

@@ -7,7 +7,7 @@ from modules.utils import Utils
 class WalletGeneratorGUI:
     def __init__(self, parent):
         self.parent = parent
-        self.taskmanager = TaskManager(self.gui)
+        self.task_manager = TaskManager(self.gui)
         self.utils = Utils()
 
         self.main_frame = ttk.Frame(self.parent, padding="30 15 30 15")

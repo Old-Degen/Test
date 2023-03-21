@@ -1,4 +1,6 @@
 import os
+from modules.utils import get_rpc
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

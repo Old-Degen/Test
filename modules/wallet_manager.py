@@ -1,9 +1,9 @@
 from web3 import Web3
 import eth_utils
-from eth_utils import keccak
 from web3.auto import w3
 from web3.middleware import geth_poa_middleware
 from web3.gas_strategies.time_based import medium_gas_price_strategy
+from modules.utils import add_to_csv
 
 
 class WalletManager:
@@ -36,16 +36,4 @@ class WalletManager:
             'from': self.account.address,
             'nonce': self.web3.eth.getTransactionCount(self.account.address),
             'gas': gas,
-            'gasPrice': self.web3.eth.gas_price,
-            'chainId': self.web3.eth.chain_id
-        })
-        signed_tx = self.web3.eth.account.sign_transaction(tx, private_key=self.account.privateKey)
-        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-        return self.web3.toHex(tx_hash)
-
-
-    def generate_wallet(self, group, name):
-        private_key = eth_utils.keccak(hexstr=str(w3.eth.generate_private_key())).hex()
-        address = w3.eth.account.from_key(private_key).address
-        add_to_csv(group, name, address, private_key)
-        return address, private_key
+            'gasPrice': self.web
