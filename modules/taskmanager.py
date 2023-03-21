@@ -4,12 +4,12 @@ class Task:
         self.task_manager = task_manager
 
     def run(self):
-        public_key = self.task_manager.utils.private_to_public_key(self.private_key)
-        self.task_manager.gui.public_key.set(public_key)
-        self.task_manager.gui.input_field.configure(state="normal")
-        self.task_manager.gui.generate_button.configure(state="normal")
-        self.task_manager.gui.output_field.configure(state="readonly")
-        self.task_manager.gui.progress.stop()
+        public_key = self.taskmanager.Utils.private_to_public_key(self.private_key)
+        self.taskmanager.gui.public_key.set(public_key)
+        self.taskmanager.gui.input_field.configure(state="normal")
+        self.taskmanager.gui.generate_button.configure(state="normal")
+        self.taskmanager.gui.output_field.configure(state="readonly")
+        self.taskmanager.gui.progress.stop()
 
 
 class TaskManager:

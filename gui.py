@@ -2,14 +2,14 @@ from tkinter import *
 from tkinter import ttk
 
 from modules.taskmanager import TaskManager
-from utils import utils
+from modules.utils import Utils
 
 
 class WalletGeneratorGUI:
     def __init__(self, parent):
         self.parent = parent
-        self.task_manager = TaskManager(self)
-        self.utils = utils()
+        self.taskmanager = TaskManager(self)
+        self.utils = Utils()
 
         self.main_frame = ttk.Frame(self.parent, padding="30 15 30 15")
         self.main_frame.grid(column=0, row=0, sticky=(N, W, E, S))
