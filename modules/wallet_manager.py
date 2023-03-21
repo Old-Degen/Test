@@ -1,9 +1,9 @@
-from web3 import Web3
 import eth_utils
+import string
+import os
+import csv
+import random
 from web3.auto import w3
-from web3.middleware import geth_poa_middleware
-from web3.gas_strategies.time_based import medium_gas_price_strategy
-
 
 class WalletManager:
     def __init__(self, provider_uri, private_key):
@@ -42,21 +42,17 @@ class WalletManager:
         tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
         return self.web3.toHex(tx_hash)
 
-    def generate_wallets(self, group, name, count):
-        addresses = []
-        private_keys = []
-        for i in range(count):
+    def generate_wallets(self, group, name, number_of_wallets):
+        wallets = []
+        for i in range(number_of_wallets):
             private_key = eth_utils.keccak(hexstr=str(w3.eth.generate_private_key())).hex()
             address = w3.eth.account.from_key(private_key).address
-            self.add_to_csv(group, f"{name}_{i+1}", address, private_key)
-            addresses.append(address)
-            private_keys.append(private_key)
-        return addresses, private_keys
+            self.add_to_csv(group, name, address, private_key)
+            wallets.append((address, private_key))
+        return wallets
 
     @staticmethod
     def add_to_csv(group, name, address, private_key):
-        import csv
-        import os
         filename = os.path.join(os.path.dirname(__file__), 'private', 'wallets.csv')
         file_exists = os.path.isfile(filename)
 
@@ -68,3 +64,12 @@ class WalletManager:
                 writer.writeheader()
 
             writer.writerow({'Group': group, 'Name': name, 'Address': address, 'Private Key': private_key})
+
+    @staticmethod
+    def generate_random_number():
+        return random.randint(0, 100)
+
+    @staticmethod
+    def generate_random_string(length=8):
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in
