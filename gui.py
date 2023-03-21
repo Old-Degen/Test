@@ -1,53 +1,55 @@
-import tkinter as tk
-from tkinter import messagebox
-from web3 import Web3
-import modules.tasks
+from tkinter import *
+from tkinter import ttk
 
-from common import add_to_csv
-from modules.tasks import Tasks
-from modules.accounts import Accounts
-from modules.wallet_manager import WalletManager
-from modules.settings import Settings
+from modules.taskmanager import TaskManager
+from utils import utils
 
 
 class WalletGeneratorGUI:
-    def __init__(self, master):
-        self.master = master
-        master.title("Polygon Wallet Generator")
+    def __init__(self, parent):
+        self.parent = parent
+        self.task_manager = TaskManager(self)
+        self.utils = utils()
 
-        # Определение размеров окна
-        screen_width = master.winfo_screenwidth()
-        screen_height = master.winfo_screenheight()
-        window_width = int(screen_width * 3 / 4)
-        window_height = int(screen_height * 3 / 4)
-        x = (screen_width - window_width) // 2
-        y = (screen_height - window_height) // 2
-        master.geometry(f"{window_width}x{window_height}+{x}+{y}")
+        self.main_frame = ttk.Frame(self.parent, padding="30 15 30 15")
+        self.main_frame.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.main_frame.columnconfigure(0, weight=1)
+        self.main_frame.rowconfigure(0, weight=1)
 
-        # Создание виджетов
-        self.left_frame = tk.Frame(master, bg="#f8f8f8")
-        self.right_frame = tk.Frame(master)
+        self.private_key = StringVar()
+        self.public_key = StringVar()
 
-        # Создание модулей
-        self.tasks = Tasks(self.left_frame)
-        self.accounts = Accounts(self.left_frame)
-        self.settings = Settings(self.left_frame)
-        self.rpc = RPC(self.left_frame)
-        self.poly_wallet_generator = PolyWalletGenerator(self.left_frame)
-        self.poly_token_manager = PolyTokenManager(self.left_frame)
+        self.create_widgets()
 
-        # Размещение виджетов на экране
-        self.left_frame.pack(side=tk.LEFT, fill=tk.Y, padx=(10, 0))
-        self.right_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.parent.bind("<Return>", self.generate_wallet)
 
-        # Визуальное отделение левой и правой колонок
-        separator = ttk.Separator(self.master, orient="vertical")
-        separator.place(relx=0.2, rely=0, relheight=1)
-        label = tk.Label(self.master, text="Polygon Wallet Generator", font=("Arial", 16, "bold"))
-        label.place(relx=0.25, rely=0.02)
+    def create_widgets(self):
+        # Creating input field
+        self.input_field = ttk.Entry(
+            self.main_frame, width=30, textvariable=self.private_key
+        )
+        self.input_field.grid(column=1, row=1, sticky=(W, E))
 
+        # Creating the generate button
+        self.generate_button = ttk.Button(
+            self.main_frame, text="Generate", command=self.generate_wallet
+        )
+        self.generate_button.grid(column=3, row=1, sticky=W)
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    gui = WalletGeneratorGUI(root)
-    root.mainloop()
+        # Creating the labels
+        ttk.Label(self.main_frame, text="Private Key:").grid(column=0, row=1, sticky=W)
+        ttk.Label(self.main_frame, text="Public Key:").grid(column=0, row=2, sticky=W)
+
+        # Creating the output field
+        self.output_field = ttk.Entry(
+            self.main_frame, width=30, textvariable=self.public_key, state="readonly"
+        )
+        self.output_field.grid(column=1, row=2, sticky=(W, E))
+
+        # Add progress bar
+        self.progress = ttk.Progressbar(self.main_frame, orient="horizontal", length=200, mode="indeterminate")
+        self.progress.grid(column=2, row=1, sticky=E)
+
+    def generate_wallet(self, event=None):
+        self.progress.start()
+        self.task_manager.create_task(self.input_field.get())
