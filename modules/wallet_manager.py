@@ -3,7 +3,6 @@ import eth_utils
 from web3.auto import w3
 from web3.middleware import geth_poa_middleware
 from web3.gas_strategies.time_based import medium_gas_price_strategy
-from modules.utils import add_to_csv
 
 
 class WalletManager:
@@ -36,4 +35,36 @@ class WalletManager:
             'from': self.account.address,
             'nonce': self.web3.eth.getTransactionCount(self.account.address),
             'gas': gas,
-            'gasPrice': self.web
+            'gasPrice': self.web3.eth.gas_price,
+            'chainId': self.web3.eth.chain_id
+        })
+        signed_tx = self.web3.eth.account.sign_transaction(tx, private_key=self.account.privateKey)
+        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        return self.web3.toHex(tx_hash)
+
+    def generate_wallets(self, group, name, count):
+        addresses = []
+        private_keys = []
+        for i in range(count):
+            private_key = eth_utils.keccak(hexstr=str(w3.eth.generate_private_key())).hex()
+            address = w3.eth.account.from_key(private_key).address
+            self.add_to_csv(group, f"{name}_{i+1}", address, private_key)
+            addresses.append(address)
+            private_keys.append(private_key)
+        return addresses, private_keys
+
+    @staticmethod
+    def add_to_csv(group, name, address, private_key):
+        import csv
+        import os
+        filename = os.path.join(os.path.dirname(__file__), 'private', 'wallets.csv')
+        file_exists = os.path.isfile(filename)
+
+        with open(filename, 'a', newline='') as csvfile:
+            headers = ['Group', 'Name', 'Address', 'Private Key']
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()
+
+            writer.writerow({'Group': group, 'Name': name, 'Address': address, 'Private Key': private_key})

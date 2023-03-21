@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-
+from modules.task_manager import TaskManager
 from modules.utils import Utils
 
 
@@ -20,7 +20,7 @@ class WalletGeneratorGUI:
 
         self.create_widgets()
 
-        self.parent.bind("<Return>", self.generate_wallet)
+        self.parent.bind("<Return>", self.generate_wallets)
 
     def create_widgets(self):
         # Creating input field

@@ -1,5 +1,5 @@
 from modules.wallet_manager import WalletManager
-from modules.utils import  add_to_csv
+from modules.utils import  Utils
 
 class Task:
     def __init__(self, private_key, task_manager):
