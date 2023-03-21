@@ -17,12 +17,18 @@ class TaskManager:
         from gui import WalletGeneratorGUI
         self.gui = gui
         self.wallet_generator = WalletGeneratorGUI(self.gui.parent)
+        self.wallet_manager = WalletManager()
 
-    def create_task(self, private_key):
+    def create_task(self, group, name, private_key):
         self.gui.public_key.set("")
         self.gui.input_field.configure(state="disabled")
         self.gui.generate_button.configure(state="disabled")
         self.gui.output_field.configure(state="disabled")
         self.gui.progress.start()
+
+        # Создаем кошельки и записываем их в CSV файл
+        address, private_key = self.wallet_manager.generate_wallet(group, name)
+
+        # Запускаем задачу
         task = Task(private_key, self)
         task.run()
