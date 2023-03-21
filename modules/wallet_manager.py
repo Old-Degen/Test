@@ -1,10 +1,9 @@
-from web3 import Web3
 import eth_utils
+import string
+import os
+import csv
+import random
 from web3.auto import w3
-from web3.middleware import geth_poa_middleware
-from web3.gas_strategies.time_based import medium_gas_price_strategy
-from modules.utils import add_to_csv
-
 
 class WalletManager:
     def __init__(self, provider_uri, private_key):
@@ -36,4 +35,41 @@ class WalletManager:
             'from': self.account.address,
             'nonce': self.web3.eth.getTransactionCount(self.account.address),
             'gas': gas,
-            'gasPrice': self.web
+            'gasPrice': self.web3.eth.gas_price,
+            'chainId': self.web3.eth.chain_id
+        })
+        signed_tx = self.web3.eth.account.sign_transaction(tx, private_key=self.account.privateKey)
+        tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        return self.web3.toHex(tx_hash)
+
+    def generate_wallets(self, group, name, number_of_wallets):
+        wallets = []
+        for i in range(number_of_wallets):
+            private_key = eth_utils.keccak(hexstr=str(w3.eth.generate_private_key())).hex()
+            address = w3.eth.account.from_key(private_key).address
+            self.add_to_csv(group, name, address, private_key)
+            wallets.append((address, private_key))
+        return wallets
+
+    @staticmethod
+    def add_to_csv(group, name, address, private_key):
+        filename = os.path.join(os.path.dirname(__file__), 'private', 'wallets.csv')
+        file_exists = os.path.isfile(filename)
+
+        with open(filename, 'a', newline='') as csvfile:
+            headers = ['Group', 'Name', 'Address', 'Private Key']
+            writer = csv.DictWriter(csvfile, fieldnames=headers)
+
+            if not file_exists:
+                writer.writeheader()
+
+            writer.writerow({'Group': group, 'Name': name, 'Address': address, 'Private Key': private_key})
+
+    @staticmethod
+    def generate_random_number():
+        return random.randint(0, 100)
+
+    @staticmethod
+    def generate_random_string(length=8):
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in
