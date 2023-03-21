@@ -44,13 +44,14 @@ MAIN_WALLET = get_main_wallet()
 
 if MAIN_WALLET:
     NETWORKS = {
-        MAIN_WALLET["Chain"]: {
+        "Polygon": {
             "rpc_uri": POLYGON_RPC_URI,
             "provider_uri": "https://rpc-mainnet.maticvigil.com/",
-            "wallet_address": MAIN_WALLET["Address"],
-            "wallet_private_key": MAIN_WALLET["Private_Key"]
+            "accounts": []
         }
     }
+
+    PROVIDER_URI = NETWORKS["Polygon"]["provider_uri"]
 else:
     NETWORKS = {}
 

@@ -50,6 +50,8 @@ class WalletGeneratorGUI:
         self.output_label = tk.Label(master, text="")
         self.output_label.pack()
 
+        self.app = app
+
     def create_widgets(self):
         # Creating input field
         self.input_field = ttk.Entry(
@@ -143,5 +145,11 @@ class WalletGeneratorGUI:
         self.address_text.delete(0, END)
         self.address_text.insert(0, address)
 
-
-app.mainloop()
+    def select_wallet(wallets):
+        print("Select main wallet (by index): ")
+        for i, wallet in enumerate(wallets):
+            print(f"{i}. {wallet}")
+        index = input().strip()
+        while not index.isdigit() or int(index) >= len(wallets):
+            index = input("Invalid input. Please enter the index of the wallet you want to select: ")
+        return index
