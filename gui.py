@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from web3 import Web3
+import modules.tasks
 
 from common import add_to_csv
 from modules.tasks import Tasks
