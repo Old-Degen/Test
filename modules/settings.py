@@ -1,8 +1,17 @@
 import os
-from modules.utils import get_rpc
+from modules.rpc import get_rpc
+
+PROVIDER_URI = "https://mainnet.infura.io/v3/YOUR_PROJECT_ID"
+WALLET_CSV_FILE = "private/wallets.csv"
+
+RPC_URI = get_rpc("mainnet")
+
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROVIDER_URI = "http://127.0.0.1:8545"
+WALLET_CSV_FILE = "private/wallets.csv"
+
 
 class Settings:
     def __init__(self):
