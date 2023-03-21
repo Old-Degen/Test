@@ -11,7 +11,7 @@ class WalletManager:
         self.web3 = Web3(Web3.HTTPProvider(provider_uri))
         self.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
         self.web3.eth.set_gas_price_strategy(medium_gas_price_strategy)
-        self.account = self.web3.eth.account.privateKeyToAccount(private_key)
+        self.account = self.web3.eth.account.from_key(private_key)
         self.utils = Utils()
 
     def get_balance(self, address):
