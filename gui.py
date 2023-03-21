@@ -14,7 +14,8 @@ class WalletGeneratorGUI:
         master.title("Wallet Generator")
 
         # Initialize task manager
-        self.task_manager = TaskManager()
+        self.task_manager = TaskManager(self)
+
 
         # Initialize wallet manager
         self.wallet_manager = WalletManager()
