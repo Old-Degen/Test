@@ -1,39 +1,26 @@
+import csv
 import os
+
 from modules.rpc import get_rpc
 
-PROVIDER_URI = "https://mainnet.infura.io/v3/YOUR_PROJECT_ID"
-WALLET_CSV_FILE = "private/wallets.csv"
+# Network settings
+NETWORKS = {
+    "Polygon": {"rpc_uri": POLYGON_RPC_URI, "provider_uri": "https://rpc-mainnet.maticvigil.com/"}
+}
 
-RPC_URI = get_rpc("mainnet")
+# File paths
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PRIVATE_DIR = os.path.join(BASE_DIR, "private")
+WALLET_CSV_FILE = os.path.join(PRIVATE_DIR, "wallets.csv")
+RPC_LIST_CSV_FILE = os.path.join(PRIVATE_DIR, "rpc_list.csv")
 
+# RPC settings
+POLYGON_RPC_URI = get_rpc("polygon")
+RPC_URI = POLYGON_RPC_URI
 
+# CSV settings
+CSV_HEADERS = ["address", "private_key", "public_key", "mnemonic_phrase", "note"]
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROVIDER_URI = "http://127.0.0.1:8545"
-WALLET_CSV_FILE = "private/wallets.csv"
+# Network settings
+NETWORKS = {"Polygon": {"rpc_uri": POLYGON_RPC_URI}}
 
-
-class Settings:
-    def __init__(self):
-        self.network = None
-        self.provider_uri = None
-
-    def load(self):
-        settings_file = os.path.join(BASE_DIR, 'settings.txt')
-        if os.path.exists(settings_file):
-            with open(settings_file, 'r') as f:
-                settings = f.read().splitlines()
-                if len(settings) == 2:
-                    self.network = settings[0]
-                    self.provider_uri = settings[1]
-
-    def save(self):
-        settings_file = os.path.join(BASE_DIR, 'settings.txt')
-        with open(settings_file, 'w') as f:
-            f.write(self.network + '\n')
-            f.write(self.provider_uri + '\n')
-
-    def get_token_balance(self, address, contract_address, decimals):
-        contract = self.web3.eth.contract(address=contract_address, abi=abi)
-        balance = contract.functions.balanceOf(address).call()
-        return balance / 10 ** decimals
