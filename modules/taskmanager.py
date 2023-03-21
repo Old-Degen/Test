@@ -27,7 +27,7 @@ class TaskManager:
         self.gui.progress.start()
 
         # Создаем кошельки и записываем их в CSV файл
-        address, private_key = self.wallet_manager.generate_wallet(group, name)
+        address, private_key = self.wallet_manager.generate_wallets(group, name)
 
         # Запускаем задачу
         task = Task(private_key, self)
