@@ -1,8 +1,8 @@
 import csv
-import os.path
+import os
 
 def add_to_csv(group, name, address, private_key):
-    filename = "wallets.csv"
+    filename = os.path.join(os.path.dirname(__file__), '..', 'private', 'wallets.csv')
     file_exists = os.path.isfile(filename)
 
     with open(filename, 'a', newline='') as csvfile:
