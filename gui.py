@@ -1,24 +1,11 @@
-from tkinter import *
-from tkinter import ttk
-from modules.task_manager import TaskManager
-from modules.utils import Utils
+import tkinter as tk
+from tkinter import messagebox
 from modules.wallet_manager import WalletManager
-from modules import settings
-
-
-
 
 class WalletGeneratorGUI:
     def __init__(self, master):
         self.master = master
         master.title("Wallet Generator")
-
-        # Initialize task manager
-        self.task_manager = TaskManager(self)
-
-
-        # Initialize wallet manager
-        self.wallet_manager = WalletManager()
 
         # Initialize GUI components
         self.chain_var = tk.StringVar(value="Polygon")
@@ -52,6 +39,13 @@ class WalletGeneratorGUI:
         self.output_label.pack()
 
         self.app = app
+
+    def get_wallet_index(self):
+        # Вывод списка кошельков и запрос индекса кошелька
+        print("0. Test User")
+        print("1. Test User")
+        wallet_index = int(input("Select main wallet (by index): "))
+        return wallet_index
 
     def create_widgets(self):
         # Creating input field
