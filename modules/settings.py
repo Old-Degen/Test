@@ -1,5 +1,7 @@
 import csv
 import os
+from modules.rpc import get_rpc
+
 
 # File paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
