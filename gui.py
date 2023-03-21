@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 
-from modules.tasks import Tasks
 from modules.accounts import Accounts
 from modules.settings import Settings
 from modules.rpc import RPC
