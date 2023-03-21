@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 
 from modules.taskmanager import TaskManager
-from utils import utils
+from modules.utils import utils
 
 
 class WalletGeneratorGUI:
