@@ -5,64 +5,64 @@ import csv
 import os.path
 
 class Tasks:
-def __init__(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="Tasks", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="Tasks", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class Accounts:
-def init(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="Accounts", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="Accounts", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class Settings:
-def init(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="Settings", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="Settings", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class PolyWalletGenerator:
-def init(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="Poly Wallet Generator", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="Poly Wallet Generator", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class PolyTokenManager:
-def init(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="Poly Token Manager", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="Poly Token Manager", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class RPC:
-def init(self, master):
-self.master = master
+    def __init__(self, master):
+        self.master = master
 
-# Создание виджетов
-self.title_label = tk.Label(master, text="RPC", font=("Arial", 16, "bold"))
+        # Создание виджетов
+        self.title_label = tk.Label(master, text="RPC", font=("Arial", 16, "bold"))
 
-# Размещение виджетов на экране
-self.title_label.pack(pady=20)
+        # Размещение виджетов на экране
+        self.title_label.pack(pady=20)
 
 class WalletManager:
     def __init__(self, master):
