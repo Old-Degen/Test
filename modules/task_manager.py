@@ -15,10 +15,10 @@ class Task:
         self.task_manager.gui.progress.stop()
 
 
-class TaskManager:
+class TaskManager():
     def __init__(self, gui):
-        self.wallet_manager = WalletManager
-        self.tasks = []
+        self.gui = gui
+        super().__init__()
 
     def create_task(self, group, name, private_key):
         self.gui.public_key.set("")
