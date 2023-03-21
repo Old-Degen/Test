@@ -9,23 +9,46 @@ from modules import settings
 
 
 class WalletGeneratorGUI:
-    def __init__(self, parent):
-        self.parent = parent
-        self.task_manager = TaskManager(self)
-        self.utils = Utils()
+    def __init__(self, master):
+        self.master = master
+        master.title("Wallet Generator")
 
-        self.main_frame = ttk.Frame(self.parent, padding="30 15 30 15")
-        self.main_frame.grid(column=0, row=0, sticky=(N, W, E, S))
-        self.main_frame.columnconfigure(0, weight=1)
-        self.main_frame.rowconfigure(0, weight=1)
+        # Initialize task manager
+        self.task_manager = TaskManager()
 
-        self.private_key = StringVar()
-        self.public_key = StringVar()
+        # Initialize wallet manager
+        self.wallet_manager = WalletManager()
 
-        self.create_widgets()
-        self.wallet_manager = WalletManager(settings.POLYGON_RPC_URI, settings.WALLET_CSV_FILE)
-        self.task_manager = TaskManager(self.wallet_manager)
-        self.parent.bind("<Return>", self.generate_wallets)
+        # Initialize GUI components
+        self.chain_var = tk.StringVar(value="Polygon")
+        self.group_var = tk.StringVar(value="Mainnet")
+        self.wallet_var = tk.StringVar(value="")
+        self.wallets = self.wallet_manager.get_wallets(self.chain_var.get(), self.group_var.get())
+        self.wallet_options = [wallet["name"] for wallet in self.wallets]
+
+        self.chain_label = tk.Label(master, text="Chain:")
+        self.chain_label.pack()
+
+        self.chain_menu = tk.OptionMenu(master, self.chain_var, *self.wallet_manager.get_chains())
+        self.chain_menu.pack()
+
+        self.group_label = tk.Label(master, text="Group:")
+        self.group_label.pack()
+
+        self.group_menu = tk.OptionMenu(master, self.group_var, *self.wallet_manager.get_groups(self.chain_var.get()))
+        self.group_menu.pack()
+
+        self.wallet_label = tk.Label(master, text="Select main wallet:")
+        self.wallet_label.pack()
+
+        self.wallet_menu = tk.OptionMenu(master, self.wallet_var, *self.wallet_options)
+        self.wallet_menu.pack()
+
+        self.generate_button = tk.Button(master, text="Generate", command=self.generate_wallet)
+        self.generate_button.pack()
+
+        self.output_label = tk.Label(master, text="")
+        self.output_label.pack()
 
     def create_widgets(self):
         # Creating input field
@@ -54,6 +77,71 @@ class WalletGeneratorGUI:
         self.progress = ttk.Progressbar(self.main_frame, orient="horizontal", length=200, mode="indeterminate")
         self.progress.grid(column=2, row=1, sticky=E)
 
-    def generate_wallet(self, event=None):
-        self.progress.start()
-        self.task_manager.create_task(self.input_field.get())
+    def generate_wallet(self):
+        # Get the selected wallet
+        selected_wallet = self.wallet_listbox.curselection()
+        if not selected_wallet:
+            messagebox.showerror("Error", "Please select a wallet!")
+            return
+        selected_wallet = selected_wallet[0]
+
+        # Get the wallets from CSV file
+        wallets = []
+        with open(settings.WALLET_CSV_FILE, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                wallets.append(row)
+
+        # Get the main wallet for Polygon
+        main_wallet = None
+        for wallet in wallets:
+            if wallet["Chain"] == "Polygon" and wallet["Group"] == "Main":
+                main_wallet = wallet
+                break
+
+        # If main wallet not found, ask the user to select one
+        if not main_wallet:
+            messagebox.showinfo(
+                "Info",
+                "No main wallet found for Polygon. Please select one.",
+            )
+            self.master.destroy()
+            main_wallet_gui = Tk()
+            WalletManagerGUI(main_wallet_gui)
+            return
+
+        # Get the selected wallet
+        selected_wallet = wallets[selected_wallet]
+
+        # Set the RPC URI and provider URI
+        chain = selected_wallet["Chain"]
+        group = selected_wallet["Group"]
+        network = settings.NETWORKS.get(chain)
+        if network:
+            rpc_uri = network.get("rpc_uri")
+            provider_uri = network.get("provider_uri")
+        else:
+            messagebox.showerror("Error", f"No settings for chain {chain}!")
+            return
+
+        # Create a wallet manager
+        self.wallet_manager = WalletManager(rpc_uri, settings.WALLET_CSV_FILE, provider_uri=provider_uri)
+
+        # Set the account and address
+        address = selected_wallet["Address"]
+        private_key = selected_wallet["Private Key"]
+        account = self.wallet_manager.get_account(private_key)
+        self.wallet_manager.set_account(account)
+
+        # Set the main account for Polygon
+        main_address = main_wallet["Address"]
+        main_private_key = main_wallet["Private Key"]
+        main_account = self.wallet_manager.get_account(main_private_key)
+        self.wallet_manager.set_main_account(main_account)
+
+        # Display the account address
+        self.address_text.delete(0, END)
+        self.address_text.insert(0, address)
+
+
+app.mainloop()
