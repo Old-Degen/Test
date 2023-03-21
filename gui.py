@@ -44,15 +44,16 @@ class PolyWalletGenerator:
         # Размещение виджетов на экране
         self.title_label.pack(pady=20)
 
+    def run(self):
+        self.master.mainloop()
+
+
 class PolyTokenManager:
     def __init__(self, master):
         self.master = master
+        self.label = tk.Label(master, text="PolyTokenManager")
+        self.label.pack()
 
-        # Создание виджетов
-        self.title_label = tk.Label(master, text="Poly Token Manager", font=("Arial", 16, "bold"))
-
-        # Размещение виджетов на экране
-        self.title_label.pack(pady=20)
 
 class RPC:
     def __init__(self, master):
@@ -78,12 +79,11 @@ class WalletManager:
         self.wallets_button.pack(pady=10)
         self.tokens_button.pack(pady=10)
 
-    def poly_wallet_generator(self):
-        # Создание виджетов
-        self.title_label = tk.Label(self.master, text="Poly Wallet Generator", font=("Arial", 16, "bold"))
-
-        # Размещение виджетов на экране
-        self.title_label.pack(pady=20)
+    class PolyWalletGenerator:
+        def __init__(self, master):
+            self.master = master
+            self.label = tk.Label(master, text="PolyWalletGenerator")
+            self.label.pack()
 
     def poly_token_manager(self):
         # Создание виджетов
@@ -91,3 +91,4 @@ class WalletManager:
 
         # Размещение виджетов на экране
         self.title_label.pack(pady=20)
+
