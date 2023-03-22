@@ -3,7 +3,7 @@ import csv
 import random
 import string
 from web3 import Web3, HTTPProvider
-from modules.rpc import RPC
+from modules.rpc import get_rpc
 from modules.nft_manager import NFTManager
 
 
@@ -11,14 +11,12 @@ from modules.nft_manager import NFTManager
 class WalletManager:
     def __init__(self):
         # Инициализация web3
-        self.rpc = RPC("Polygon")
-        self.web3 = Web3(HTTPProvider(self.rpc.uri))
+        self.web3 = Web3(HTTPProvider(get_rpc()[0]))
         # Загрузка кошельков из файла
         self.wallets = self.load_wallets_from_csv(os.path.join('private', 'wallets.csv'))
         # Инициализация NFT-менеджера
-        self.nft_manager = NFTManager(self.rpc.uri)
-        self.w3 = Web3(self.rpc.uri)
-
+        self.nft_manager = NFTManager(get_rpc()[0])
+        self.w3 = Web3(self.get_rpc())
 
     def load_wallets_from_csv(self, filename):
         """
@@ -132,7 +130,7 @@ class WalletManager:
 
     def get_balance(self, address, token_address):
         # Получение баланса токенов Matic на блокчейне Polygon
-        contract_address = self.w3.toChecksumAddress(token_address)
+        contract_address = Web3.toChecksumAddress(token_address)
         abi = [{"constant": True, "inputs": [{"internalType": "address", "name": "account", "type": "address"}], "name": "balanceOf", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "payable": False, "stateMutability": "view", "type": "function"}]
         contract = self.w3.eth.contract(address=contract_address, abi=abi)
         balance = contract.functions.balanceOf(address).call()
