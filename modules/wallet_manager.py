@@ -20,11 +20,11 @@ class WalletManager:
             return []
         wallets = []
         with open(filename, 'r') as f:
-            reader = csv.DictReader(f)
+            reader = csv.DictReader(f, fieldnames=["chain", "group", "name", "address", "private_key"])
             for row in reader:
                 wallets.append({
                     'group': row['group'],
-                    'prefix': row['prefix'],
+                    'prefix': row['name'],
                     'address': row['address'],
                     'private_key': row['private_key']
                 })
