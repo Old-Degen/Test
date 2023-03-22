@@ -1,83 +1,156 @@
-from web3 import Web3, HTTPProvider
 import csv
 import os
-from .nft_manager import NFTManager
-
-
 
 class WalletManager:
     def __init__(self):
-        self.web3 = Web3(HTTPProvider("https://mainnet.infura.io/v3/your-infura-project-id"))
-        self.wallets = self.load_wallets_from_csv('private/wallets.csv')
+        self.web3 = Web3(HTTPProvider(get_rpc()[0]))
+        self.wallets = self._load_wallets_from_csv('private/wallets.csv')
         self.selected_wallet = self.get_wallet()
-        self.nft_manager = NFTManager('http://localhost:8545')  # замените адрес на свой RPC-сервер
+        self.nft_manager = NFTManager(get_rpc()[0])
 
-        # Загрузка кошельков из файла CSV
-        wallets_path = os.path.join('private', 'wallets.csv')
-        with open(wallets_path, 'r') as csvfile:
-            reader = csv.reader(csvfile)
-            self.wallets = [{'index': i, 'private_key': row[0]} for i, row in enumerate(reader)]
-
-
-        # Убедитесь, что индекс кошелька в пределах допустимого диапазона
-        if wallet_index >= len(private_keys):
-            raise ValueError('Invalid wallet index')
-
-        # Получение приватного ключа и создание аккаунта
-        private_key = private_keys[wallet_index]
-        self.account = self.web3.eth.account.from_key(private_key)
-
-    def get_wallet_names(self):
-        return [f"Wallet {wallet['index']}" for wallet in self.wallets]
-
-    def distribute_tokens_and_nft(self, token_address: str, token_abi: str, nft_address: str, nft_abi: str, group: str,
-                                  prefix: str):
+    def get_wallet(self):
         """
-        Раздает токены и NFT в кошельки из определенной группы с определенным префиксом.
+        Запрашивает у пользователя выбор основного кошелька и возвращает его адрес и приватный ключ.
 
-        :param token_address: Адрес контракта токена
-        :param token_abi: ABI контракта токена
-        :param nft_address: Адрес контракта NFT
-        :param nft_abi: ABI контракта NFT
-        :param group: Группа кошельков, в которую будут раздаваться токены и NFT
-        :param prefix: Префикс кошельков, в которые будут раздаваться токены и NFT
+        :return: Кортеж, содержащий адрес и приватный ключ выбранного кошелька.
         """
-        # Получаем список кошельков, соответствующих заданным параметрам группы и префикса
-        wallets = self.get_wallets_by_group_and_prefix(group, prefix)
+        # Выводим список кошельков и запрашиваем у пользователя выбор
+        print("Select main wallet:")
+        for i, wallet in enumerate(self.wallets):
+            print(f"{i}. {wallet['name']}")
+        wallet_index = input_with_int_check("Enter the index of the wallet to select: ",
+                                            max_value=len(self.wallets) - 1)
 
-        # Подключаемся к RPC-серверу, используя первый адрес из списка доступных
-        web3 = Web3(HTTPProvider(get_rpc()[0]))
+        # Возвращаем адрес и приватный ключ выбранного кошелька
+        wallet = self.wallets[wallet_index]
+        return wallet['address'], wallet['private_key']
 
-        # Загружаем контракты токена и NFT
-        token_contract = web3.eth.contract(address=web3.toChecksumAddress(token_address), abi=json.loads(token_abi))
-        nft_contract = web3.eth.contract(address=web3.toChecksumAddress(nft_address), abi=json.loads(nft_abi))
+    def generate_wallet(self):
+        """
+        Генерирует новый кошелек и сохраняет его в CSV-файл.
 
-        # Запрашиваем у пользователя количество токенов для раздачи и проверяем, что это число больше 0
-        token_amount = input_with_int_check("Enter the amount of tokens to distribute: ", min_value=1)
+        :return: Кортеж, содержащий адрес и приватный ключ нового кошелька.
+        """
+        # Генерируем новый кошелек
+        account = self.web3.eth.account.create()
 
-        # Запрашиваем у пользователя ID NFT для раздачи и проверяем, что это число больше 0
-        nft_id = input_with_int_check("Enter the ID of the NFT to distribute: ", min_value=1)
+        # Сохраняем его в CSV-файл
+        with open('private/wallets.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(['', account.address, account.privateKey.hex()])
 
-        # Перебираем все кошельки и раздаем им токены и NFT
-        for wallet in wallets:
-            # Получаем адрес кошелька в формате, пригодном для использования в контрактах
-            wallet_address = web3.toChecksumAddress(wallet["address"])
+        # Возвращаем адрес и приватный ключ нового кошелька
+        return account.address, account.privateKey.hex()
 
-            # Проверяем, что кошелек не пустой
-            balance = token_contract.functions.balanceOf(wallet_address).call()
-            if balance == 0:
-                continue
+    def get_wallets_by_group_and_prefix(self, group, prefix):
+        """
+        Возвращает список кошельков из заданной группы с заданным префиксом.
 
-            # Раздаем токены
-            transaction = token_contract.functions.transfer(wallet_address, token_amount).buildTransaction({
-                "from": self.account.address,
-                "nonce": web3.eth.getTransactionCount(self.account.address),
-                "gas": 200000,
-                "gasPrice": web3.toWei('50', 'gwei')
-            })
-            signed_txn = self.account.sign_transaction(transaction)
-            tx_hash = web3.eth.sendRawTransaction(signed_txn.rawTransaction)
-            print(f"Tokens sent to {wallet_address}: {token_amount} (tx: {web3.toHex(tx_hash)})")
+        :param group: Группа кошельков.
+        :param prefix: Префикс кошельков.
+        :return: Список кортежей, каждый из которых содержит адрес и приватный ключ кошелька.
+        """
+        wallets = []
+        for wallet in self.wallets:
+            if wallet['group'] == group and wallet['name'].startswith(prefix):
+                wallets.append((wallet['address'], wallet['private_key']))
+        return wallets
 
-            # Раздаем NFT
-            transaction
+    def _load_wallets_from_csv(self, filename):
+        """
+        Загружает список кошельков из CSV-файла.
+
+        :param filename: Имя файла.
+        :return: Список словарей, каждый из которых содержит информацию о кошельке (адрес и приватный ключ).
+        """
+        wallets = []
+        with open(filename, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                wallets.append(row)
+        return wallets
+
+    def distribute_tokens_and_nft(self, contract_address, abi, token_name, token_symbol, amount, recipient, nft_id):
+        """
+        Распределяет токены и NFT на заданный адрес.
+
+        :param contract_address: Адрес контракта токена.
+        :param abi: ABI контракта токена.
+        :param token_name: Название токена.
+        :param token_symbol: Символ токена.
+        :param amount: Количество токенов для распределения.
+        :param recipient: Адрес получателя.
+        :param nft_id: ID NFT для распределения.
+        """
+        # Создаем экземпляр контракта токена
+        token_contract = self.web3.eth.contract(address=contract_address, abi=abi)
+
+        # Получаем основной кошелек и его приватный ключ
+        main_wallet_address, main_wallet_private_key = self.get_wallet()
+
+        # Подписываем транзакцию с помощью приватного ключа
+        nonce = self.web3.eth.getTransactionCount(main_wallet_address)
+        tx = {
+            'nonce': nonce,
+            'to': contract_address,
+            'value': 0,
+            'gas': 2000000,
+            'gasPrice': self.web3.eth.gasPrice,
+            'data':
+                token_contract.functions.transfer(recipient, amount).buildTransaction({'from': main_wallet_address})[
+                    'data']
+        }
+        signed_tx = self.web3.eth.account.signTransaction(tx, main_wallet_private_key)
+
+        # Отправляем транзакцию на сеть
+        tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+
+        # Ожидаем подтверждения транзакции
+        tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
+
+        # Проверяем статус транзакции
+        if tx_receipt['status'] == 0:
+            print("Transaction failed.")
+            return
+
+        # Создаем экземпляр контракта NFT
+        nft_contract = self.nft_manager.get_contract_by_name(token_name)
+
+        # Получаем основной кошелек и его приватный ключ
+        main_wallet_address, main_wallet_private_key = self.get_wallet()
+
+        # Подписываем транзакцию с помощью приватного ключа
+        nonce = self.web3.eth.getTransactionCount(main_wallet_address)
+        tx = {
+            'nonce': nonce,
+            'to': nft_contract.address,
+            'value': 0,
+            'gas': 2000000,
+            'gasPrice': self.web3.eth.gasPrice,
+            'data': nft_contract.functions.safeTransferFrom(main_wallet_address, recipient, nft_id).buildTransaction(
+                {'from': main_wallet_address})['data']
+        }
+        signed_tx = self.web3.eth.account.signTransaction(tx, main_wallet_private_key)
+
+        # Отправляем транзакцию на сеть
+        tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+
+        # Ожидаем подтверждения транзакции
+        tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
+
+        # Проверяем статус транзакции
+        if tx_receipt['status'] == 0:
+
+    def _load_wallets_from_csv(self, filename):
+        """
+        Загружает список кошельков из CSV-файла.
+        :param filename: Имя файла.
+        :return: Список словарей, каждый из которых содержит информацию о кошельке (адрес и приватный ключ).
+        """
+        wallets = []
+                with open(filename, 'r') as f:
+                    reader = csv.DictReader(f)
+                    for row in reader:
+                        wallets.append(row)
+                return wallets
+
