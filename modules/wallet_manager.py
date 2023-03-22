@@ -4,6 +4,8 @@ import random
 import string
 from web3 import Web3
 from web3.providers.rpc import HTTPProvider
+from modules.rpc import get_rpc
+
 
 
 class WalletManager:
