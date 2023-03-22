@@ -76,73 +76,50 @@ class WalletManager:
                 wallets.append((wallet['address'], wallet['private_key']))
         return wallets
 
-    def distribute_tokens_and_nft(self, contract_address, abi, token_name, token_symbol, amount, recipient, nft_id):
-        """
-        Распределяет токены и NFT на заданный адрес.
+    def distribute_tokens_and_nft(self, token_address, token_abi, nft_contract_address, nft_abi, recipients):
+        token_contract = self.web3.eth.contract(address=token_address, abi=token_abi)
+        nft_contract = self.web3.eth.contract(address=nft_contract_address, abi=nft_abi)
 
-        :param contract_address: Адрес контракта токена.
-        :param abi: ABI контракта токена.
-        :param token_name: Название токена.
-        :param token_symbol: Символ токена.
-        :param amount: Количество токенов для распределения.
-        :param recipient: Адрес получателя.
-        :param nft_id: ID NFT для распределения.
-        """
-        # Создаем экземпляр контракта токена
-        token_contract = self.web3.eth.contract(address=contract_address, abi=abi)
+        for recipient in recipients:
+            wallet = recipient['wallet']
+            amount = recipient['amount']
+            nft_token_id = recipient.get('nft_token_id')
+            if nft_token_id is None:
+                nft_token_id = 0
 
-        # Получаем основной кошелек и его приватный ключ
-        main_wallet_address, main_wallet_private_key = self.get_wallet()
+            nonce = self.web3.eth.get_transaction_count(self.selected_wallet['address'])
+            gas_price = self.web3.eth.gas_price
+            gas_limit = 250000
 
-        # Подписываем транзакцию с помощью приватного ключа
-        nonce = self.web3.eth.getTransactionCount(main_wallet_address)
-        tx = {
-            'nonce': nonce,
-            'to': contract_address,
-            'value': 0,
-            'gas': 2000000,
-            'gasPrice': self.web3.eth.gasPrice,
-            'data':
-                token_contract.functions.transfer(recipient, amount).buildTransaction({'from': main_wallet_address})[
-                    'data']
-        }
-        signed_tx = self.web3.eth.account.signTransaction(tx, main_wallet_private_key)
+            # Transfer token
+            tx = token_contract.functions.transfer(wallet, amount).buildTransaction({
+                'chainId': 1,
+                'gas': gas_limit,
+                'gasPrice': gas_price,
+                'nonce': nonce,
+            })
+            signed_tx = self.web3.eth.account.sign_transaction(tx, self.selected_wallet['private_key'])
+            tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+            tx_receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
 
-        # Отправляем транзакцию на сеть
-        tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
+            if tx_receipt['status'] == 0:
+                print(f"Transfer failed for {wallet}")
+                continue
 
-        # Ожидаем подтверждения транзакции
-        tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
+            # Mint NFT
+            if nft_token_id != 0:
+                tx = nft_contract.functions.mint(wallet, nft_token_id).buildTransaction({
+                    'chainId': 1,
+                    'gas': gas_limit,
+                    'gasPrice': gas_price,
+                    'nonce': nonce + 1,
+                })
+                signed_tx = self.web3.eth.account.sign_transaction(tx, self.selected_wallet['private_key'])
+                tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+                tx_receipt = self.web3.eth.wait_for_transaction_receipt(tx_hash)
 
-        # Проверяем статус транзакции
-        if tx_receipt['status'] == 0:
-            print("Transaction failed.")
-            return
+                if tx_receipt['status'] == 0:
+                    print(f"Minting NFT failed for {wallet}")
+                    continue
 
-        # Создаем экземпляр контракта NFT
-        nft_contract = self.nft_manager.get_contract_by_name(token_name)
-
-        # Получаем основной кошелек и его приватный ключ
-        main_wallet_address, main_wallet_private_key = self.get_wallet()
-
-        # Подписываем транзакцию с помощью приватного ключа
-        nonce = self.web3.eth.getTransactionCount(main_wallet_address)
-        tx = {
-            'nonce': nonce,
-            'to': nft_contract.address,
-            'value': 0,
-            'gas': 2000000,
-            'gasPrice': self.web3.eth.gasPrice,
-            'data': nft_contract.functions.safeTransferFrom(main_wallet_address, recipient, nft_id).buildTransaction(
-                {'from': main_wallet_address})['data']
-        }
-        signed_tx = self.web3.eth.account.signTransaction(tx, main_wallet_private_key)
-
-        # Отправляем транзакцию на сеть
-        tx_hash = self.web3.eth.sendRawTransaction(signed_tx.rawTransaction)
-
-        # Ожидаем подтверждения транзакции
-        tx_receipt = self.web3.eth.waitForTransactionReceipt(tx_hash)
-
-        # Проверяем статус транзакции
-        if tx_receipt['status'] == 0:
+            print(f"Successfully distributed {amount} tokens and minted NFT with id {nft_token_id} to {wallet}")
