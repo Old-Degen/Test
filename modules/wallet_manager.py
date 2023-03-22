@@ -13,7 +13,7 @@ class WalletManager:
         # Инициализация web3
         self.web3 = Web3(HTTPProvider(get_rpc()[0]))
         # Загрузка кошельков из файла
-        self.wallets = self.load_wallets_from_csv('private/wallets.csv')
+        self.wallets = self.load_wallets_from_csv(os.path.join('private', 'wallets.csv'))
         # Инициализация NFT-менеджера
         self.nft_manager = NFTManager(get_rpc()[0])
 
@@ -78,11 +78,35 @@ class WalletManager:
         # Возвращаем выбранный кошелек
         return wallets[choice - 1]
 
-    def generate_wallet(self, group, prefix):
+    def generate_wallet(self, group, name):
         # Создание нового кошелька
-        pass
+        # Генерация ключей
+        w3 = Web3()
+        acct = w3.eth.account.create()
+        private_key = acct.privateKey.hex()
+        public_key = acct.publicKey.hex()
+        address = acct.address
 
-    def get_wallets_by_group_and_prefix(self, group, prefix):
+        # Добавление кошелька в список
+        chain = 'Polygon' # пока что только для Polygon
+        row = {'chain': chain, 'group': group, 'name': f"{name}_{len(self.wallets)+1}",
+               'address': address, 'private_key': private_key}
+        self.wallets.append(row)
+
+        # Запись в файл
+        filename = 'private/wallets.csv'
+        file_exists = os.path.isfile(filename)
+        with open(filename, mode='a', newline='') as csv_file:
+            fieldnames = ['chain', 'group', 'name', 'address', 'private_key']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+            if not file_exists:
+                writer.writeheader()
+
+            writer.writerow(row)
+        return row
+
+    def get_wallets_by_group_and_name(self, group, name):
         # Получение списка кошельков по группе и префиксу
         pass
 
