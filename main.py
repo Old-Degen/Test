@@ -1,6 +1,6 @@
 from tkinter import *
 from gui import WalletGeneratorGUI
-from modules.rpc import get_rpc
+from modules.rpc import RPC
 
 
 if __name__ == "__main__":

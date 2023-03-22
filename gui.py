@@ -1,6 +1,8 @@
-import tkinter as tk
-from tkinter import messagebox
+from tkinter import *
+from tkinter.ttk import *
+from tkinter.filedialog import askopenfilename
 from modules.wallet_manager import WalletManager
+
 
 class WalletGeneratorGUI:
     def __init__(self, master):
@@ -17,6 +19,24 @@ class WalletGeneratorGUI:
         self.wallet_names = self.wallet_manager.get_wallet()
         self.wallet_menu = tk.OptionMenu(master, self.selected_wallet_var, *self.wallet_names)
         self.wallet_menu.pack()
+
+        self.new_wallet_group_label = ttk.Label(self.wallets_frame, text="Group:")
+        self.new_wallet_group_label.grid(row=2, column=0, sticky="w")
+
+        self.new_wallet_group_entry = ttk.Entry(self.wallets_frame, width=30)
+        self.new_wallet_group_entry.grid(row=2, column=1, sticky="w")
+
+        self.new_wallet_prefix_label = ttk.Label(self.wallets_frame, text="Prefix:")
+        self.new_wallet_prefix_label.grid(row=3, column=0, sticky="w")
+
+        self.new_wallet_prefix_entry = ttk.Entry(self.wallets_frame, width=30)
+        self.new_wallet_prefix_entry.grid(row=3, column=1, sticky="w")
+
+        self.new_wallet_count_label = ttk.Label(self.wallets_frame, text="Count:")
+        self.new_wallet_count_label.grid(row=4, column=0, sticky="w")
+
+        self.new_wallet_count_entry = ttk.Entry(self.wallets_frame, width=30)
+        self.new_wallet_count_entry.grid(row=4, column=1, sticky="w")
 
     def get_wallet_index(self):
         # Вывод списка кошельков и запрос индекса кошелька
