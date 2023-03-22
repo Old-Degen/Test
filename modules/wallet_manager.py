@@ -16,6 +16,7 @@ class WalletManager:
         self.wallets = self.load_wallets_from_csv(os.path.join('private', 'wallets.csv'))
         # Инициализация NFT-менеджера
         self.nft_manager = NFTManager(get_rpc()[0])
+        self.w3 = Web3(self.get_rpc())
 
     def load_wallets_from_csv(self, filename):
         """
@@ -76,7 +77,7 @@ class WalletManager:
                 print('Invalid choice, try again!')
                 continue
         # Возвращаем выбранный кошелек
-        return wallets[choice - 1]
+        return wallets
 
     def generate_wallet(self, group, name):
         # Создание нового кошелька
@@ -107,16 +108,33 @@ class WalletManager:
         return row
 
     def get_wallets_by_group_and_name(self, group, name):
-        # Получение списка кошельков по группе и префиксу
-        pass
+        # Получение списка кошельков по группе и названию
+        filtered_wallets = [w for w in self.wallets if w.group == group and w.name == name]
+        return filtered_wallets
 
     def save_wallets_to_csv(self, filename):
         # Сохранение списка кошельков в CSV-файл
-        pass
+        with open(filename, 'w', newline='') as csvfile:
+            fieldnames = ['chain', 'group', 'name', 'address', 'private_key']
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for wallet in self.wallets:
+                writer.writerow({
+                    'chain': wallet['chain'],
+                    'group': wallet['group'],
+                    'name': wallet['name'],
+                    'address': wallet['address'],
+                    'private_key': wallet['private_key']
+                })
 
-    def get_balance(self):
-        # Получение баланса текущего кошелька
-        pass
+
+    def get_balance(self, address, token_address):
+        # Получение баланса токенов Matic на блокчейне Polygon
+        contract_address = Web3.toChecksumAddress(token_address)
+        abi = [{"constant": True, "inputs": [{"internalType": "address", "name": "account", "type": "address"}], "name": "balanceOf", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "payable": False, "stateMutability": "view", "type": "function"}]
+        contract = self.w3.eth.contract(address=contract_address, abi=abi)
+        balance = contract.functions.balanceOf(address).call()
+        return balance
 
     def transfer_eth(self, to_address, value):
         # Отправка эфира со текущего кошелька
