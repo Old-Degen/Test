@@ -23,6 +23,7 @@ class WalletManager:
             reader = csv.DictReader(f, fieldnames=["chain", "group", "name", "address", "private_key"])
             for row in reader:
                 wallets.append({
+                    'chain': row['chain'],
                     'group': row['group'],
                     'prefix': row['name'],
                     'address': row['address'],
