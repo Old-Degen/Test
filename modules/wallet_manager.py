@@ -30,47 +30,54 @@ class WalletManager:
     def get_wallet_names(self):
         return [f"Wallet {wallet['index']}" for wallet in self.wallets]
 
-    def distribute_tokens_and_nft(self, token_address, nft_address, amount, nft_id):
-        # Получаем аккаунт, с которого будем отправлять токены
-        from_account = self.web3.eth.account.from_key(self.selected_wallet['private_key'])
-        nonce = self.web3.eth.get_transaction_count(from_account.address)
+    def distribute_tokens_and_nft(self, token_address: str, token_abi: str, nft_address: str, nft_abi: str, group: str,
+                                  prefix: str):
+        """
+        Раздает токены и NFT в кошельки из определенной группы с определенным префиксом.
 
-        # Получаем контракты ERC20 и NFT
-        erc20_contract = self.web3.eth.contract(address=token_address, abi=ERC20_ABI)
-        nft_contract = self.web3.eth.contract(address=nft_address, abi=NFT_ABI)
+        :param token_address: Адрес контракта токена
+        :param token_abi: ABI контракта токена
+        :param nft_address: Адрес контракта NFT
+        :param nft_abi: ABI контракта NFT
+        :param group: Группа кошельков, в которую будут раздаваться токены и NFT
+        :param prefix: Префикс кошельков, в которые будут раздаваться токены и NFT
+        """
+        # Получаем список кошельков, соответствующих заданным параметрам группы и префикса
+        wallets = self.get_wallets_by_group_and_prefix(group, prefix)
 
-        # Для каждого кошелька в списке создаем транзакцию на отправку токенов и NFT
-        for wallet in self.wallets:
-            to_account = self.web3.eth.account.from_key(wallet['private_key'])
+        # Подключаемся к RPC-серверу, используя первый адрес из списка доступных
+        web3 = Web3(HTTPProvider(get_rpc()[0]))
 
-            # Отправляем токены
-            tx = erc20_contract.functions.transfer(to_account.address, amount).buildTransaction({
-                'from': from_account.address,
-                'nonce': nonce,
+        # Загружаем контракты токена и NFT
+        token_contract = web3.eth.contract(address=web3.toChecksumAddress(token_address), abi=json.loads(token_abi))
+        nft_contract = web3.eth.contract(address=web3.toChecksumAddress(nft_address), abi=json.loads(nft_abi))
+
+        # Запрашиваем у пользователя количество токенов для раздачи и проверяем, что это число больше 0
+        token_amount = input_with_int_check("Enter the amount of tokens to distribute: ", min_value=1)
+
+        # Запрашиваем у пользователя ID NFT для раздачи и проверяем, что это число больше 0
+        nft_id = input_with_int_check("Enter the ID of the NFT to distribute: ", min_value=1)
+
+        # Перебираем все кошельки и раздаем им токены и NFT
+        for wallet in wallets:
+            # Получаем адрес кошелька в формате, пригодном для использования в контрактах
+            wallet_address = web3.toChecksumAddress(wallet["address"])
+
+            # Проверяем, что кошелек не пустой
+            balance = token_contract.functions.balanceOf(wallet_address).call()
+            if balance == 0:
+                continue
+
+            # Раздаем токены
+            transaction = token_contract.functions.transfer(wallet_address, token_amount).buildTransaction({
+                "from": self.account.address,
+                "nonce": web3.eth.getTransactionCount(self.account.address),
+                "gas": 200000,
+                "gasPrice": web3.toWei('50', 'gwei')
             })
-            signed_tx = from_account.sign_transaction(tx)
-            tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-            print(f"Tokens sent to {to_account.address}: {amount} (tx: {tx_hash.hex()})")
-            nonce += 1
+            signed_txn = self.account.sign_transaction(transaction)
+            tx_hash = web3.eth.sendRawTransaction(signed_txn.rawTransaction)
+            print(f"Tokens sent to {wallet_address}: {token_amount} (tx: {web3.toHex(tx_hash)})")
 
-            # Отправляем NFT
-            tx = nft_contract.functions.transferFrom(from_account.address, to_account.address, nft_id).buildTransaction(
-                {
-                    'from': from_account.address,
-                    'nonce': nonce,
-                })
-            signed_tx = from_account.sign_transaction(tx)
-            tx_hash = self.web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-            print(f"NFT sent to {to_account.address}: {nft_id} (tx: {tx_hash.hex()})")
-            nonce += 1
-
-            # Обновляем данные кошелька в списке
-            wallet_balance = erc20_contract.functions.balanceOf(to_account.address).call()
-            wallet['balance'] = wallet_balance
-
-            wallet_nft_balance = self.nft_manager.get_nft_balance(to_account.address, nft_address)
-            wallet['nft_balance'] = wallet_nft_balance
-
-            with open('private/wallets.csv', 'w', newline='') as csvfile:
-                fieldnames = ['name', 'address', 'private_key', 'balance', 'nft_balance']
-                writer = csv.DictWriter(csvfile, fieldnames=
+            # Раздаем NFT
+            transaction
