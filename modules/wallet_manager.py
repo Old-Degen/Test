@@ -4,9 +4,24 @@ import os
 class WalletManager:
     def __init__(self):
         self.web3 = Web3(HTTPProvider(get_rpc()[0]))
-        self.wallets = self._load_wallets_from_csv('private/wallets.csv')
+        self.wallets = self.load_wallets_from_csv('private/wallets.csv')
         self.selected_wallet = self.get_wallet()
         self.nft_manager = NFTManager(get_rpc()[0])
+
+    def load_wallets_from_csv(self, filename):
+        if not os.path.isfile(filename):
+            return []
+        wallets = []
+        with open(filename, 'r') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                wallets.append({
+                    'group': row['group'],
+                    'prefix': row['prefix'],
+                    'address': row['address'],
+                    'private_key': row['private_key']
+                })
+        return wallets
 
     def get_wallet(self):
         """
@@ -54,20 +69,6 @@ class WalletManager:
         for wallet in self.wallets:
             if wallet['group'] == group and wallet['name'].startswith(prefix):
                 wallets.append((wallet['address'], wallet['private_key']))
-        return wallets
-
-    def _load_wallets_from_csv(self, filename):
-        """
-        Загружает список кошельков из CSV-файла.
-
-        :param filename: Имя файла.
-        :return: Список словарей, каждый из которых содержит информацию о кошельке (адрес и приватный ключ).
-        """
-        wallets = []
-        with open(filename, 'r') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                wallets.append(row)
         return wallets
 
     def distribute_tokens_and_nft(self, contract_address, abi, token_name, token_symbol, amount, recipient, nft_id):
@@ -140,17 +141,3 @@ class WalletManager:
 
         # Проверяем статус транзакции
         if tx_receipt['status'] == 0:
-
-    def _load_wallets_from_csv(self, filename):
-        """
-        Загружает список кошельков из CSV-файла.
-        :param filename: Имя файла.
-        :return: Список словарей, каждый из которых содержит информацию о кошельке (адрес и приватный ключ).
-        """
-        wallets = []
-                with open(filename, 'r') as f:
-                    reader = csv.DictReader(f)
-                    for row in reader:
-                        wallets.append(row)
-                return wallets
-
