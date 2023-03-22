@@ -1,57 +1,29 @@
-from tkinter import *
-from tkinter import ttk
-from modules.task_manager import TaskManager
-from modules.utils import Utils
+import tkinter as tk
+from tkinter import messagebox
 from modules.wallet_manager import WalletManager
-from modules import settings
-
-
-
 
 class WalletGeneratorGUI:
     def __init__(self, master):
         self.master = master
         master.title("Wallet Generator")
 
-        # Initialize task manager
-        self.task_manager = TaskManager(self)
-
-
-        # Initialize wallet manager
+        # Создание экземпляра класса WalletManager
         self.wallet_manager = WalletManager()
 
-        # Initialize GUI components
-        self.chain_var = tk.StringVar(value="Polygon")
-        self.group_var = tk.StringVar(value="Mainnet")
-        self.wallet_var = tk.StringVar(value="")
-        self.wallets = self.wallet_manager.get_wallets(self.chain_var.get(), self.group_var.get())
-        self.wallet_options = [wallet["name"] for wallet in self.wallets]
+        # Создание переменной StringVar для хранения выбранного кошелька
+        self.selected_wallet_var = tk.StringVar()
 
-        self.chain_label = tk.Label(master, text="Chain:")
-        self.chain_label.pack()
-
-        self.chain_menu = tk.OptionMenu(master, self.chain_var, *self.wallet_manager.get_chains())
-        self.chain_menu.pack()
-
-        self.group_label = tk.Label(master, text="Group:")
-        self.group_label.pack()
-
-        self.group_menu = tk.OptionMenu(master, self.group_var, *self.wallet_manager.get_groups(self.chain_var.get()))
-        self.group_menu.pack()
-
-        self.wallet_label = tk.Label(master, text="Select main wallet:")
-        self.wallet_label.pack()
-
-        self.wallet_menu = tk.OptionMenu(master, self.wallet_var, *self.wallet_options)
+        # Создание выпадающего списка с именами кошельков
+        self.wallet_names = self.wallet_manager.get_wallet_names()
+        self.wallet_menu = tk.OptionMenu(master, self.selected_wallet_var, *self.wallet_names)
         self.wallet_menu.pack()
 
-        self.generate_button = tk.Button(master, text="Generate", command=self.generate_wallet)
-        self.generate_button.pack()
-
-        self.output_label = tk.Label(master, text="")
-        self.output_label.pack()
-
-        self.app = app
+    def get_wallet_index(self):
+        # Вывод списка кошельков и запрос индекса кошелька
+        print("0. Test User")
+        print("1. Test User")
+        wallet_index = int(input("Select main wallet (by index): "))
+        return wallet_index
 
     def create_widgets(self):
         # Creating input field
