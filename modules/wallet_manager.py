@@ -199,12 +199,38 @@ class WalletManager:
         return nft_contract.functions.tokenURI(token_id).call()
 
     def get_nfts_by_owner(self, owner_address):
-        # Получение списка NFT, принадлежащих владельцу
-        pass
+        # Создаем пустой список для хранения NFT, принадлежащих владельцу
+        nfts_by_owner = []
+
+        # Проходим по всем NFT в списке self.nfts
+        for nft in self.nfts:
+            # Проверяем, совпадает ли owner_address с адресом владельца NFT
+            if nft.owner == owner_address:
+                # Если да, добавляем NFT в список nfts_by_owner
+                nfts_by_owner.append(nft)
+
+        # Возвращаем список NFT, принадлежащих владельцу
+        return nfts_by_owner
 
     def transfer_nft(self, contract_address, token_id, to_address):
-        # Передача NFT
-        pass
+        # Находим NFT в списке self.nfts
+        for nft in self.nfts:
+            if nft.contract_address == contract_address and nft.token_id == token_id:
+                # Проверяем, что адрес отправителя NFT совпадает с адресом владельца NFT
+                if nft.owner == self.sender_address:
+                    # Обновляем адрес владельца на to_address
+                    nft.owner = to_address
+                    return True
+                else:
+                    return False
+        # Если NFT не найден в списке self.nfts, возвращаем False
+        return False
+
+    success = wallet_manager.transfer_nft("0xcontract", "123", "0xrecipient")
+    if success:
+        print("NFT successfully transfered")
+    else:
+        print("Failed transferring NFT")
 
     def burn_nft(self, contract_address, token_id):
         # Уничтожение NFT
