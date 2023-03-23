@@ -1,30 +1,7 @@
 import tkinter as tk
 
-class App(tk.Tk):
-    def __init__(self):
-        super().__init__()
 
-        # Set the window title
-        self.title("My NFT Wallet")
 
-        # Set the window size
-        self.geometry("800x600")
-
-        # Create a frame to hold the modules
-        self.module_frame = tk.Frame(self)
-        self.module_frame.pack(side=tk.LEFT, fill=tk.Y)
-
-        # Create a frame to hold the content
-        self.content_frame = tk.Frame(self)
-        self.content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-        # Create the modules
-        self.create_modules()
-
-    def create_modules(self):
-        # Create the wallet module
-        self.wallet_module = WalletModule(self.content_frame)
-        self.wallet_module.show()
 
 class Module(tk.Frame):
     def __init__(self, parent, title):
@@ -75,3 +52,29 @@ class ButtonBar(tk.Frame):
         # Add a new button
         button = tk.Button(self, text=text, command=command)
         button.pack(side=tk.LEFT, padx=10, pady=10)
+
+class App(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Set the window title
+        self.title("My NFT Wallet")
+
+        # Set the window size
+        self.geometry("800x600")
+
+        # Create a frame to hold the modules
+        self.module_frame = tk.Frame(self)
+        self.module_frame.pack(side=tk.LEFT, fill=tk.Y)
+
+        # Create a frame to hold the content
+        self.content_frame = tk.Frame(self)
+        self.content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        # Create the modules
+        self.create_modules()
+
+    def create_modules(self):
+        # Create the wallet module
+        wallet_module = WalletModule(self.content_frame, "Wallet Manager")
+        wallet_module.pack(fill=tk.BOTH, expand=True)
