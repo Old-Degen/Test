@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 import csv
 import os
-from matic import Matic
+import matic
 from web3 import Web3
 
 
@@ -55,7 +55,7 @@ class WalletManager:
                 balances[wallet['name']] = self.matic.balance_of(wallet['address'])
             return balances
 
-    def send_tokens(self, chain: str, group: str, name: Optional[str] = None, to_address: str, amount: float) -> str:
+    def send_tokens(self, chain: str, group: str, to_address: str, amount: float, name: Optional[str] = None) -> str:
         wallet = self.get_wallets(chain, group, name)
 
         # Initialize Matic object
