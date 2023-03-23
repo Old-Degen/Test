@@ -38,6 +38,12 @@ class WalletManager:
             for row in reader:
                 self.wallets.append(row)
 
+    def get_wallet(self, chain: str, group: str, name: str) -> Optional[Dict[str, str]]:
+        for wallet in self.wallets:
+            if wallet['chain'] == chain and wallet['group'] == group and wallet['name'] == name:
+                return wallet
+        return None
+
     def get_balance(self, chain: str, group: str, name: Optional[str] = None) -> float:
         wallet = self.get_wallet(chain, group, name)
         matic = Matic(matic_rpc_url=wallet["chain"])
