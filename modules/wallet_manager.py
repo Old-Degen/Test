@@ -204,10 +204,14 @@ class WalletManager:
 
         # Проходим по всем NFT в списке self.nfts
         for nft in self.nfts:
-            # Проверяем, совпадает ли owner_address с адресом владельца NFT
-            if nft.owner == owner_address:
-                # Если да, добавляем NFT в список nfts_by_owner
-                nfts_by_owner.append(nft)
+            try:
+                # Проверяем, совпадает ли owner_address с адресом владельца NFT
+                if nft.owner == owner_address:
+                    # Если да, добавляем NFT в список nfts_by_owner
+                    nfts_by_owner.append(nft)
+            except AttributeError:
+                # Если в объекте NFT нет атрибута owner, пропускаем его
+                pass
 
         # Возвращаем список NFT, принадлежащих владельцу
         return nfts_by_owner
