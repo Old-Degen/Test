@@ -1,5 +1,6 @@
 import os
 import csv
+from typing import Dict, Any
 import random
 import string
 from web3 import Web3, HTTPProvider
@@ -25,18 +26,21 @@ class WalletManager:
     def __init__(self):
         # Инициализация web3
         self.rpc = RPC("Polygon")
-        self.web3 = Web3(HTTPProvider(self.rpc.uri))
+        self.provider_uri = provider_uri
+        self.web3 = Web3(HTTPProvider(provider_uri))
+        self.sender_address = sender_address
         # Загрузка кошельков из файла
         self.wallets = self.load_wallets_from_csv(os.path.join('private', 'wallets.csv'))
         # Инициализация NFT-менеджера
+        self.rpc = RPC(self.web3, Constants.TOKEN_CONTRACT_ADDRESS, Constants.TOKEN_ABI)
         self.nft_manager = NFTManager(self.rpc.uri)
         self.w3 = Web3(HTTPProvider(self.rpc.uri))
         self.private_key = self.wallets[0]['private_key']
         self.account = self.web3.eth.account.from_key(self.private_key)
         self.address = self.account.address
-        self.sender_address = saender_address
         self.nfts = []
-        self.nft_manager = NFTManager(provider_uri)
+        self.nft_manager = NFTManager(self.web3, Constants.NFT_CONTRACT_ADDRESS, Constants.NFT_ABI)
+
 
     def load_wallets_from_csv(self, filename):
         """
