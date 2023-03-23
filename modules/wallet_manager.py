@@ -38,11 +38,13 @@ class WalletManager:
             for row in reader:
                 self.wallets.append(row)
 
-    def import_account(self, chain: str, group: str, name: str, private_key: str, address: str) -> None:
-        pass
-
     def get_balance(self, chain: str, group: str, name: Optional[str] = None) -> float:
-        pass
+        wallet = self.get_wallet(chain, group, name)
+        matic = Matic(matic_rpc_url=wallet["chain"])
+        web3 = Web3(matic.w3_provider)
+
+        balance = web3.eth.get_balance(wallet["address"]) / 10 ** 18
+        return balance
 
     def send_tokens(self, chain: str, group: str, name: Optional[str] = None, to_address: str, amount: float) -> str:
         pass
