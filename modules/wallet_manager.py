@@ -12,9 +12,7 @@ from modules.constants import Constants
 # Использование констант из класса Constants
 nft_address = Constants.NFT_CONTRACT_ADDRESS
 max_nft_count = Constants.MAX_NFT_COUNT
-constants = Constants()
-abis = constants.abis
-
+NFT_ABI = Constants.NFT_ABI
 constants = Constants()
 
 

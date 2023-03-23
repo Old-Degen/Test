@@ -1,12 +1,12 @@
-from typing import Any, Dict
-from web3 import Web3
+from web3 import Web3, HTTPProvider
+from web3.contract import Contract
+from modules.constants import Constants
+from modules.wallet_manager import WalletManager
+
 
 class NFTManager:
-    def __init__(self, web3: Web3, wallet_manager: Any, nft_address: str, nft_abi: Dict[str, Any]):
-        self.web3 = web3
-        self.wallet_manager = wallet_manager
-        self.nft_contract = self.web3.eth.contract(address=nft_address, abi=nft_abi)
-
+    def __init__(self, rpc_url):
+        self.web3 = Web3(HTTPProvider(rpc_url))
 
     def get_nft_balance(self, address, contract_address):
         nft_contract = self.web3.eth.contract(address=contract_address, abi=NFT_ABI)
