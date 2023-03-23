@@ -7,12 +7,6 @@ from modules.rpc import RPC
 from modules.nft_manager import NFTManager
 from eth_utils import to_wei
 from modules.constants import NFT_ABI
-from modules.constants import Constants
-
-# Использование констант из класса Constants
-nft_address = Constants.NFT_CONTRACT_ADDRESS
-max_nft_count = Constants.MAX_NFT_COUNT
-
 
 
 
@@ -30,9 +24,6 @@ class WalletManager:
         self.private_key = self.wallets[0]['private_key']
         self.account = self.web3.eth.account.from_key(self.private_key)
         self.address = self.account.address
-        self.sender_address = sender_address
-        self.nfts = []
-        self.nft_manager = NFTManager(provider_uri)
 
     def load_wallets_from_csv(self, filename):
         """
@@ -207,15 +198,23 @@ class WalletManager:
         nft_contract = self.nft_manager.get_contract(contract_address, NFT_ABI)
         return nft_contract.functions.tokenURI(token_id).call()
 
-    def get_nfts_by_owner(self, owner_address, contract_address):
-        contract = self.nft_manager.get_contract(contract_address, NFT_ABI)
-        nfts = []
-        for token_id in range(contract.functions.balanceOf(owner_address).call()):
-            nft_owner = contract.functions.ownerOf(token_id).call()
-            if nft_owner == owner_address:
-                nft = {'id': token_id, 'owner': nft_owner}
-                nfts.append(nft)
-        return nfts
+    def get_nfts_by_owner(self, owner_address):
+        # Создаем пустой список для хранения NFT, принадлежащих владельцу
+        nfts_by_owner = []
+
+        # Проходим по всем NFT в списке self.nfts
+        for nft in self.nfts:
+            try:
+                # Проверяем, совпадает ли owner_address с адресом владельца NFT
+                if nft.owner == owner_address:
+                    # Если да, добавляем NFT в список nfts_by_owner
+                    nfts_by_owner.append(nft)
+            except AttributeError:
+                # Если в объекте NFT нет атрибута owner, пропускаем его
+                pass
+
+        # Возвращаем список NFT, принадлежащих владельцу
+        return nfts_by_owner
 
     def transfer_nft(self, contract_address, token_id, to_address):
         # Находим NFT в списке self.nfts
