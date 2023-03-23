@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-from modules.constants import abis
+from modules.constants import Constants
+abis = Constants.abis
 from modules.wallet_manager import WalletManager
 
 
