@@ -1,6 +1,7 @@
 from web3 import Web3, HTTPProvider
 
 
+
 class NFTManager:
     def __init__(self, rpc_url):
         self.web3 = Web3(HTTPProvider(rpc_url))

@@ -3,20 +3,27 @@ import csv
 import random
 import string
 from web3 import Web3, HTTPProvider
-from modules.rpc import get_rpc
+from modules.rpc import RPC
 from modules.nft_manager import NFTManager
+from eth_utils import to_wei
+from modules.constants import NFT_ABI
+
 
 
 
 class WalletManager:
     def __init__(self):
         # Инициализация web3
-        self.web3 = Web3(HTTPProvider(get_rpc()[0]))
+        self.rpc = RPC("Polygon")
+        self.web3 = Web3(HTTPProvider(self.rpc.uri))
         # Загрузка кошельков из файла
         self.wallets = self.load_wallets_from_csv(os.path.join('private', 'wallets.csv'))
         # Инициализация NFT-менеджера
-        self.nft_manager = NFTManager(get_rpc()[0])
-        self.w3 = Web3(self.get_rpc())
+        self.nft_manager = NFTManager(self.rpc.uri)
+        self.w3 = Web3(HTTPProvider(self.rpc.uri))
+        self.private_key = self.wallets[0]['private_key']
+        self.account = self.web3.eth.account.from_key(self.private_key)
+        self.address = self.account.address
 
     def load_wallets_from_csv(self, filename):
         """
@@ -130,31 +137,66 @@ class WalletManager:
 
     def get_balance(self, address, token_address):
         # Получение баланса токенов Matic на блокчейне Polygon
-        contract_address = Web3.toChecksumAddress(token_address)
+        contract_address = self.web3.to_checksum_address(token_address)
         abi = [{"constant": True, "inputs": [{"internalType": "address", "name": "account", "type": "address"}], "name": "balanceOf", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}], "payable": False, "stateMutability": "view", "type": "function"}]
-        contract = self.w3.eth.contract(address=contract_address, abi=abi)
+        contract = self.web3.eth.contract(address=contract_address, abi=abi)
         balance = contract.functions.balanceOf(address).call()
         return balance
 
-    def transfer_eth(self, to_address, value):
-        # Отправка эфира со текущего кошелька
-        pass
+    def transfer_matic(self, to_address, value):
+        # Отправка MATIC со текущего кошелька
+        nonce = self.w3.eth.get_transaction_count(self.address)
+        gas_price = to_wei('5', 'gwei')
+        tx = {
+            'nonce': nonce,
+            'to': to_address,
+            'value': value,
+            'gas': 21000,
+            'gasPrice': gas_price,
+        }
+        signed_tx = self.account.sign_transaction(tx)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        return tx_hash.hex()
 
     def get_token_balance(self, contract_address):
         # Получение баланса токенов
-        pass
+        ABI = [{"constant": True, "inputs": [{"name": "owner", "type": "address"}], "name": "balanceOf",
+                "outputs": [{"name": "", "type": "uint256"}], "payable": False, "stateMutability": "view",
+                "type": "function"}]
+        contract = self.web3.eth.contract(address=contract_address, abi=ABI)
+        balance = contract.functions.balanceOf(self.address).call()
+        return balance
 
     def transfer_tokens(self, contract_address, to_address, value):
-        # Отправка токенов
-        pass
-
-    def create_nft(self, contract_address, token_id, metadata_url):
-        # Создание нового NFT
-        pass
+        ABI = [{"constant": True, "inputs": [{"internalType": "address", "name": "account", "type": "address"}],
+                "name": "balanceOf", "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+                "payable": False, "stateMutability": "view", "type": "function"}]
+        # Получаем экземпляр контракта
+        contract = self.web3.eth.contract(address=contract_address, abi=ABI)
+        # Получаем количество токенов на кошельке отправителя
+        token_balance = contract.functions.balanceOf(self.address).call()
+        # Проверяем, что у отправителя достаточно токенов для перевода
+        if token_balance < value:
+            print(f"Not enough tokens to transfer. Current balance: {token_balance}")
+            return None
+        # Получаем количество десятичных знаков токена
+        decimals = contract.functions.decimals().call()
+        # Конвертируем количество токенов в единицы учета токена (например, для ERC20 - в wei)
+        token_value = value * 10 ** decimals
+        # Подготавливаем данные для отправки транзакции
+        tx_data = contract.functions.transfer(to_address, token_value).buildTransaction({
+            'nonce': self.w3.eth.get_transaction_count(self.address),
+            'gas': 100000,
+            'gasPrice': self.w3.eth.gas_price
+        })
+        # Подписываем транзакцию и отправляем на сеть
+        signed_tx = self.account.sign_transaction(tx_data)
+        tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        return tx_hash.hex()
 
     def get_nft(self, contract_address, token_id):
-        # Получение информации о NFT
-        pass
+        nft_contract = self.nft_manager.get_contract(contract_address, NFT_ABI)
+        return nft_contract.functions.tokenURI(token_id).call()
 
     def get_nfts_by_owner(self, owner_address):
         # Получение списка NFT, принадлежащих владельцу
