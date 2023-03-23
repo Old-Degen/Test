@@ -22,8 +22,9 @@ class App(tk.Tk):
         self.create_modules()
 
     def create_modules(self):
-        # Create the modules
-        pass
+        # Create the wallet module
+        self.wallet_module = WalletModule(self.content_frame)
+        self.wallet_module.show()
 
 class Module(tk.Frame):
     def __init__(self, parent, title):
@@ -52,6 +53,14 @@ class Module(tk.Frame):
     def on_hide(self):
         # Called when the module is hidden
         pass
+
+class WalletModule(Module):
+    def __init__(self, parent):
+        super().__init__(parent, "Wallet Manager")
+
+        # Create the widgets for the wallet module
+        self.wallet_label = tk.Label(self.content_frame, text="Wallet Manager")
+        self.wallet_label.pack()
 
 class ButtonBar(tk.Frame):
     def __init__(self, parent, buttons):
