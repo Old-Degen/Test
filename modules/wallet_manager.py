@@ -56,4 +56,16 @@ class WalletManager:
             return balances
 
     def send_tokens(self, chain: str, group: str, name: Optional[str] = None, to_address: str, amount: float) -> str:
-        pass
+        wallet = self.get_wallets(chain, group, name)
+
+        # Initialize Matic object
+        matic = Matic(matic_rpc_url=wallet['chain'], parent_chain_rpc=wallet['parent_chain_rpc'],
+                      matic_wallet_private_key=wallet['private_key'])
+
+        # Convert amount to wei
+        amount_wei = int(amount * 10 ** 18)
+
+        # Transfer tokens
+        tx_hash = matic.transferTokens(to_address, amount_wei)
+
+        return tx_hash
