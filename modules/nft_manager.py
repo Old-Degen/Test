@@ -1,5 +1,5 @@
 from web3 import Web3, HTTPProvider
-
+from web3.contract import Contract
 
 
 class NFTManager:
@@ -10,4 +10,7 @@ class NFTManager:
         nft_contract = self.web3.eth.contract(address=contract_address, abi=NFT_ABI)
         return nft_contract.functions.balanceOf(address).call()
 
+    def get_contract(self, contract_address, abi):
+        contract = self.web3.eth.contract(address=contract_address, abi=abi)
+        return contract
     # Другие методы для работы с контрактом NFT...

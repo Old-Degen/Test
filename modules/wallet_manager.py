@@ -7,6 +7,12 @@ from modules.rpc import RPC
 from modules.nft_manager import NFTManager
 from eth_utils import to_wei
 from modules.constants import NFT_ABI
+from modules.constants import Constants
+
+# Использование констант из класса Constants
+nft_address = Constants.NFT_CONTRACT_ADDRESS
+max_nft_count = Constants.MAX_NFT_COUNT
+
 
 
 
@@ -24,6 +30,9 @@ class WalletManager:
         self.private_key = self.wallets[0]['private_key']
         self.account = self.web3.eth.account.from_key(self.private_key)
         self.address = self.account.address
+        self.sender_address = sender_address
+        self.nfts = []
+        self.nft_manager = NFTManager(provider_uri)
 
     def load_wallets_from_csv(self, filename):
         """
@@ -198,13 +207,35 @@ class WalletManager:
         nft_contract = self.nft_manager.get_contract(contract_address, NFT_ABI)
         return nft_contract.functions.tokenURI(token_id).call()
 
-    def get_nfts_by_owner(self, owner_address):
-        # Получение списка NFT, принадлежащих владельцу
-        pass
+    def get_nfts_by_owner(self, owner_address, contract_address):
+        contract = self.nft_manager.get_contract(contract_address, NFT_ABI)
+        nfts = []
+        for token_id in range(contract.functions.balanceOf(owner_address).call()):
+            nft_owner = contract.functions.ownerOf(token_id).call()
+            if nft_owner == owner_address:
+                nft = {'id': token_id, 'owner': nft_owner}
+                nfts.append(nft)
+        return nfts
 
     def transfer_nft(self, contract_address, token_id, to_address):
-        # Передача NFT
-        pass
+        # Находим NFT в списке self.nfts
+        for nft in self.nfts:
+            if nft.contract_address == contract_address and nft.token_id == token_id:
+                # Проверяем, что адрес отправителя NFT совпадает с адресом владельца NFT
+                if nft.owner == self.sender_address:
+                    # Обновляем адрес владельца на to_address
+                    nft.owner = to_address
+                    return True
+                else:
+                    return False
+        # Если NFT не найден в списке self.nfts, возвращаем False
+        return False
+
+    success = wallet_manager.transfer_nft("0xcontract", "123", "0xrecipient")
+    if success:
+        print("NFT successfully transfered")
+    else:
+        print("Failed transferring NFT")
 
     def burn_nft(self, contract_address, token_id):
         # Уничтожение NFT
