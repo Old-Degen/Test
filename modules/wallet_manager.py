@@ -13,7 +13,6 @@ class WalletManager:
         self.wallets = self.load_wallets()
         self.contract_addresses = contract_addresses
         self.matic = Matic(chainId=137, api_url="https://rpc-mainnet.maticvigil.com/")
-        self.matic = Matic(chainId=137, api_url="https://rpc-mainnet.maticvigil.com/")
         self.wallets = []
         self.import_wallets_from_csv()
 
@@ -38,19 +37,23 @@ class WalletManager:
             for row in reader:
                 self.wallets.append(row)
 
-    def get_wallet(self, chain: str, group: str, name: str) -> Optional[Dict[str, str]]:
+    def get_wallets(self, chain: str, group: Optional[str] = None, name: Optional[str] = None) -> List[dict]:
+        wallets = []
         for wallet in self.wallets:
-            if wallet['chain'] == chain and wallet['group'] == group and wallet['name'] == name:
-                return wallet
-        return None
+            if wallet['chain'] == chain and (group is None or wallet['group'] == group) and (
+                    name is None or wallet['name'] == name):
+                wallets.append(wallet)
+        return wallets[0] if name is not None else wallets
 
-    def get_balance(self, chain: str, group: str, name: Optional[str] = None) -> float:
-        wallet = self.get_wallet(chain, group, name)
-        matic = Matic(matic_rpc_url=wallet["chain"])
-        web3 = Web3(matic.w3_provider)
-
-        balance = web3.eth.get_balance(wallet["address"]) / 10 ** 18
-        return balance
+    def get_balances(self, chain: str, group: Optional[str] = None, name: Optional[str] = None) -> float:
+        wallets = self.get_wallets(chain, group, name)
+        if name is not None:
+            return self.matic.balance_of(wallets['address'])
+        else:
+            balances = {}
+            for wallet in wallets:
+                balances[wallet['name']] = self.matic.balance_of(wallet['address'])
+            return balances
 
     def send_tokens(self, chain: str, group: str, name: Optional[str] = None, to_address: str, amount: float) -> str:
         pass
