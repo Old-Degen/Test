@@ -1,27 +1,21 @@
-# Импорты
-from typing import Dict, Any
 import json
 import os
 
-# Класс с константами
+ABIS_DIR = 'ABI'
+
+abis = {}
+for filename in os.listdir(ABIS_DIR):
+    if filename.endswith('.json'):
+        with open(os.path.join(ABIS_DIR, filename), 'r') as f:
+            abis[filename[:-5]] = json.load(f)
+
 class Constants:
     def __init__(self):
         self.load_tokens()
 
     def load_tokens(self):
-        nft_abi = {}
-        token_abi = {}
-        for file in os.listdir('ABI'):
-            if file.endswith('.json'):
-                with open(os.path.join('ABI', file), 'r') as f:
-                    abi = json.load(f)
-                if 'nft' in file:
-                    nft_abi = abi
-                elif 'token' in file:
-                    token_abi = abi
-
-        self.NFT_ABI = nft_abi
-        self.TOKEN_ABI = token_abi
+        self.NFT_ABI = abis['nft']
+        self.TOKEN_ABI = abis['token']
 
     # Адреса смарт-контрактов
     NFT_CONTRACT_ADDRESS = "0x1234567890abcdef"
