@@ -1,13 +1,9 @@
-from tkinter import *
-from gui import WalletGeneratorGUI
-from modules.rpc import RPC
-
+from tkinter import Tk
+from gui import App
+from modules.wallet_manager import WalletManager
 
 if __name__ == "__main__":
     root = Tk()
-    root.title("Wallet Generator")
-
-    WalletGeneratorGUI(root)
-    app.main()
-
+    root.title("NFT Wallet Manager")
+    app = App(root)
     root.mainloop()

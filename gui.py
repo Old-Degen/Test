@@ -1,150 +1,152 @@
-from tkinter import *
 import tkinter as tk
-import tkinter as ttk
-from tkinter.ttk import *
-from tkinter.filedialog import askopenfilename
+from tkinter import ttk
 from modules.wallet_manager import WalletManager
 
 
-class WalletGeneratorGUI:
-    def __init__(self, master):
-        self.master = master
-        master.title("Wallet Generator")
+class App(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-        # Создание экземпляра класса WalletManager
-        self.wallet_manager = WalletManager()
+        # Set the window title
+        self.title("NFT Wallet Manager")
 
-        # Создание переменной StringVar для хранения выбранного кошелька
-        self.selected_wallet_var = tk.StringVar()
+        # Set the window size
+        self.geometry("800x600")
 
-        # Создание выпадающего списка с именами кошельков
-        self.wallet_names = self.wallet_manager.get_wallet()
-        self.wallet_menu = tk.OptionMenu(master, self.selected_wallet_var, *self.wallet_names)
-        self.wallet_menu.pack()
+        # Create a frame to hold the modules
+        self.module_frame = tk.Frame(self)
+        self.module_frame.pack(side=tk.LEFT, fill=tk.Y)
 
-        self.new_wallet_group_label = ttk.Label(self.wallet_names, text="Group:")
-        self.new_wallet_group_label.grid(row=2, column=0, sticky="w")
+        # Create a frame to hold the content
+        self.content_frame = tk.Frame(self)
+        self.content_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.new_wallet_group_entry = ttk.Entry(self.wallet_names, width=30)
-        self.new_wallet_group_entry.grid(row=2, column=1, sticky="w")
+        # Create the modules
+        self.create_modules()
 
-        self.new_wallet_prefix_label = ttk.Label(self.wallet_names, text="Prefix:")
-        self.new_wallet_prefix_label.grid(row=3, column=0, sticky="w")
+    def create_modules(self):
+        # Create the wallet module
+        self.wallet_module = WalletModule(self.module_frame, "My Wallets")
+        self.wallet_module.show()
 
-        self.new_wallet_prefix_entry = ttk.Entry(self.wallet_names, width=30)
-        self.new_wallet_prefix_entry.grid(row=3, column=1, sticky="w")
+        # Create the settings module
+        self.settings_module = SettingsModule(self.module_frame, "Settings")
+        self.settings_module.hide()
 
-        self.new_wallet_count_label = ttk.Label(self.wallet_names, text="Count:")
-        self.new_wallet_count_label.grid(row=4, column=0, sticky="w")
+        # Create the about module
+        self.about_module = AboutModule(self.module_frame, "About")
+        self.about_module.hide()
 
-        self.new_wallet_count_entry = ttk.Entry(self.wallet_names, width=30)
-        self.new_wallet_count_entry.grid(row=4, column=1, sticky="w")
+        # Create the content
+        self.create_content()
 
-    def get_wallet_index(self):
-        # Вывод списка кошельков и запрос индекса кошелька
-        print("0. Test User")
-        print("1. Test User")
-        wallet_index = int(input("Select main wallet (by index): "))
-        return wallet_index
+    def create_content(self):
+        # Create the wallet manager
+        self.wallet_manager = WalletManager(self.content_frame)
+
+        # Add the wallet manager to the content frame
+        self.wallet_manager.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+    def show_module(self, module):
+        # Show a module
+        pass
+
+    def hide_module(self, module):
+        # Hide a module
+        pass
+
+class Module(tk.Frame):
+    def __init__(self, parent, title):
+        super().__init__(parent)
+
+        # Set the module title
+        self.title = tk.Label(self, text=title, font=("Arial", 16, "bold"))
+        self.title.pack(pady=10)
+
+        # Create the content frame
+        self.content_frame = tk.Frame(self)
+        self.content_frame.pack(fill=tk.BOTH, expand=True)
+
+    def show(self):
+        # Show the module
+        self.pack(fill=tk.BOTH, expand=True)
+
+    def hide(self):
+        # Hide the module
+        self.pack_forget()
+
+    def on_show(self):
+        # Called when the module is shown
+        pass
+
+    def on_hide(self):
+        # Called when the module is hidden
+        pass
+
+class WalletModule(Module):
+    def __init__(self, parent, title):
+        super().__init__(parent, title)
+
+        # Create the add wallet button
+        self.add_wallet_button = tk.Button(self.content_frame, text="Add Wallet")
+        self.add_wallet_button.pack(pady=10)
+
+        # Create the wallet list
+        self.wallet_list = tk.Listbox(self.content_frame)
+        self.wallet_list.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # Add the wallets to the list
+        self.add_wallets_to_list()
+
+    def add_wallets_to_list(self):
+        # Add the wallets to the list
+        pass
+
+    def on_show(self):
+        # Called when the module is shown
+        pass
+
+    def on_hide(self):
+        # Called when the module is hidden
+        pass
+
+class Settings(Module):
+    def __init__(self, parent, title):
+        super().__init__(parent, title)
 
     def create_widgets(self):
-        # Creating input field
-        self.input_field = ttk.Entry(
-            self.main_frame, width=30, textvariable=self.private_key
-        )
-        self.input_field.grid(column=1, row=1, sticky=(W, E))
+        # Create a label for the blockchain selection
+        blockchain_label = tk.Label(self.content_frame, text="Select a blockchain:")
+        blockchain_label.pack(pady=10)
 
-        # Creating the generate button
-        self.generate_button = ttk.Button(
-            self.main_frame, text="Generate", command=self.generate_wallet
-        )
-        self.generate_button.grid(column=3, row=1, sticky=W)
+        # Create a dropdown list for the blockchain selection
+        self.blockchain_var = tk.StringVar(self)
+        blockchain_choices = ["Ethereum", "Binance Smart Chain"]
+        self.blockchain_var.set(blockchain_choices[0])
+        blockchain_dropdown = tk.OptionMenu(self.content_frame, self.blockchain_var, *blockchain_choices)
+        blockchain_dropdown.pack()
 
-        # Creating the labels
-        ttk.Label(self.main_frame, text="Private Key:").grid(column=0, row=1, sticky=W)
-        ttk.Label(self.main_frame, text="Public Key:").grid(column=0, row=2, sticky=W)
+        # Create a label for the network selection
+        network_label = tk.Label(self.content_frame, text="Select a network:")
+        network_label.pack(pady=10)
 
-        # Creating the output field
-        self.output_field = ttk.Entry(
-            self.main_frame, width=30, textvariable=self.public_key, state="readonly"
-        )
-        self.output_field.grid(column=1, row=2, sticky=(W, E))
+        # Create a dropdown list for the network selection
+        self.network_var = tk.StringVar(self)
+        network_choices = ["Mainnet", "Testnet"]
+        self.network_var.set(network_choices[0])
+        network_dropdown = tk.OptionMenu(self.content_frame, self.network_var, *network_choices)
+        network_dropdown.pack()
 
-        # Add progress bar
-        self.progress = ttk.Progressbar(self.main_frame, orient="horizontal", length=200, mode="indeterminate")
-        self.progress.grid(column=2, row=1, sticky=E)
+        # Create a button to save the settings
+        save_button = tk.Button(self.content_frame, text="Save Settings", command=self.save_settings)
+        save_button.pack(pady=10)
 
-    def generate_wallet(self):
-        # Get the selected wallet
-        selected_wallet = self.wallet_listbox.curselection()
-        if not selected_wallet:
-            messagebox.showerror("Error", "Please select a wallet!")
-            return
-        selected_wallet = selected_wallet[0]
+    def save_settings(self):
+        # Get the selected blockchain and network
+        blockchain = self.blockchain_var.get()
+        network = self.network_var.get()
 
-        # Get the wallets from CSV file
-        wallets = []
-        with open(settings.WALLET_CSV_FILE, "r") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                wallets.append(row)
-
-        # Get the main wallet for Polygon
-        main_wallet = None
-        for wallet in wallets:
-            if wallet["Chain"] == "Polygon" and wallet["Group"] == "Main":
-                main_wallet = wallet
-                break
-
-        # If main wallet not found, ask the user to select one
-        if not main_wallet:
-            messagebox.showinfo(
-                "Info",
-                "No main wallet found for Polygon. Please select one.",
-            )
-            self.master.destroy()
-            main_wallet_gui = Tk()
-            WalletManagerGUI(main_wallet_gui)
-            return
-
-        # Get the selected wallet
-        selected_wallet = wallets[selected_wallet]
-
-        # Set the RPC URI and provider URI
-        chain = selected_wallet["Chain"]
-        group = selected_wallet["Group"]
-        network = settings.NETWORKS.get(chain)
-        if network:
-            rpc_uri = network.get("rpc_uri")
-            provider_uri = network.get("provider_uri")
-        else:
-            messagebox.showerror("Error", f"No settings for chain {chain}!")
-            return
-
-        # Create a wallet manager
-        self.wallet_manager = WalletManager(rpc_uri, settings.WALLET_CSV_FILE, provider_uri=provider_uri)
-
-        # Set the account and address
-        address = selected_wallet["Address"]
-        private_key = selected_wallet["Private Key"]
-        account = self.wallet_manager.get_account(private_key)
-        self.wallet_manager.set_account(account)
-
-        # Set the main account for Polygon
-        main_address = main_wallet["Address"]
-        main_private_key = main_wallet["Private Key"]
-        main_account = self.wallet_manager.get_account(main_private_key)
-        self.wallet_manager.set_main_account(main_account)
-
-        # Display the account address
-        self.address_text.delete(0, END)
-        self.address_text.insert(0, address)
-
-    def select_wallet(wallets):
-        print("Select main wallet (by index): ")
-        for i, wallet in enumerate(wallets):
-            print(f"{i}. {wallet}")
-        index = input().strip()
-        while not index.isdigit() or int(index) >= len(wallets):
-            index = input("Invalid input. Please enter the index of the wallet you want to select: ")
-        return index
+        # Save the settings to a file
+        settings = {"blockchain": blockchain, "network": network}
+        with open("settings.json", "w") as f:
+            json.dump(settings, f)

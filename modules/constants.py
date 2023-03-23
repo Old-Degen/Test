@@ -1,23 +1,27 @@
-# Импорты
-from typing import Dict, Any
+import os
+import json
 
-# Класс с константами
+ABIS_DIR = 'ABI'
+
 class Constants:
-    # Адреса смарт-контрактов
-    NFT_CONTRACT_ADDRESS = "0x1234567890abcdef"
-    TOKEN_CONTRACT_ADDRESS = "0xfedcba0987654321"
+    def __init__(self):
+        self.load_tokens()
+        self.load_nft()
 
-    # ABI для смарт-контрактов
-    NFT_ABI: Dict[str, Any] = {...}
-    TOKEN_ABI: Dict[str, Any] = {...}
+    def load_tokens(self):
+        self.TOKEN_ABI = None
+        for filename in os.listdir(ABIS_DIR):
+            if filename.endswith(".json"):
+                with open(os.path.join(ABIS_DIR, filename)) as f:
+                    data = json.load(f)
+                    if filename[:-5] == 'matic':
+                        self.TOKEN_ABI = data
 
-    # Максимальное количество NFT, которое можно создать
-    MAX_NFT_COUNT = 1000000
-
-    # Другие константы
-    SOME_CONSTANT = "some_value"
-
-    # Методы класса Constants (если необходимо)
-    @classmethod
-    def get_some_value(cls) -> str:
-        return cls.SOME_CONSTANT
+    def load_nft(self):
+        self.NFT_ABI = None
+        for filename in os.listdir(ABIS_DIR):
+            if filename.endswith(".json"):
+                with open(os.path.join(ABIS_DIR, filename)) as f:
+                    data = json.load(f)
+                    if filename[:-5] == 'Polygon_NFT':
+                        self.NFT_ABI = data
