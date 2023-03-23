@@ -11,6 +11,11 @@ class WalletManager:
         self.contracts_path = contracts_path
         self.wallets_path = wallets_path
         self.wallets = self.load_wallets()
+        self.contract_addresses = contract_addresses
+        self.matic = Matic(chainId=137, api_url="https://rpc-mainnet.maticvigil.com/")
+        self.matic = Matic(chainId=137, api_url="https://rpc-mainnet.maticvigil.com/")
+        self.wallets = []
+        self.import_wallets_from_csv()
 
     def load_wallets(self) -> List[dict]:
         wallets = []
@@ -22,7 +27,16 @@ class WalletManager:
         return wallets
 
     def create_account(self, chain: str, group: str, name: str) -> Tuple[str, str]:
-        pass
+        account = self.matic.account.create()
+        private_key = account.privateKey
+        address = account.address
+        return address, private_key
+
+    def import_wallets_from_csv(self):
+        with open('wallets.csv', mode='r') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                self.wallets.append(row)
 
     def import_account(self, chain: str, group: str, name: str, private_key: str, address: str) -> None:
         pass
