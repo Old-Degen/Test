@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from modules.constants import NFT_ABI, TOKEN_ABI, NFT_CONTRACT_ADDRESS, TOKEN_CONTRACT_ADDRESS, MAX_NFT_COUNT
+from modules.constants import abis
 from modules.wallet_manager import WalletManager
 
 
