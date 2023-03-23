@@ -10,9 +10,12 @@ from eth_utils import to_wei
 from modules.constants import Constants
 
 # Использование констант из класса Constants
-nft_address = Constants.NFT_CONTRACT_ADDRESS
+Polygon_NFT_CONTRACT_ADDRESS = Constants.Polygon_NFT_CONTRACT_ADDRESS
+MATIC_CONTRACT_ADDRESS = Constants.MATIC_CONTRACT_ADDRESS
 max_nft_count = Constants.MAX_NFT_COUNT
-NFT_ABI = Constants.NFT_ABI
+constants = Constants()
+abis = constants.abis
+
 constants = Constants()
 
 
