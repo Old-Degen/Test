@@ -4,8 +4,11 @@ from modules.wallet_manager import WalletManager
 
 
 class App(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, master, wallet_manager):
+        self.master = master
+        self.wallet_manager = wallet_manager
+        self.master.geometry("800x600")
+        self.create_widgets()
 
         # Set the window title
         self.title("NFT Wallet Manager")
